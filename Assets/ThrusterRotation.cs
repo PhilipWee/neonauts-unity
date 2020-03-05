@@ -8,26 +8,18 @@ public class ThrusterRotation : MonoBehaviour
     public float thrust_magnitude = 10f;
 
     private HingeJoint2D pivot;
-    private GameObject thruster_effector;
-    private Vector3 thruster_effector_initial_pos;
-    private Transform thruster_effector_transform;
-    private PointEffector2D point_effector;
+    private GameObject FlameStream;
+    private Rigidbody2D thruster_rb;
     // Start is called before the first frame update
     void Start()
     {
         pivot = GetComponent<HingeJoint2D>();
-
-        thruster_effector_transform  = transform.Find("ThrustHolder");
-        
-
-
-        thruster_effector_initial_pos = thruster_effector_transform.localPosition;
-        thruster_effector = thruster_effector_transform.gameObject;
-        print(thruster_effector);
+        thruster_rb = GetComponent<Rigidbody2D>();
+        FlameStream = transform.Find("FlameStream").gameObject;
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {   
         //Code for rotating the thruster
         float horizontal_input = Input.GetAxis("Horizontal");
@@ -37,12 +29,17 @@ public class ThrusterRotation : MonoBehaviour
         motor.motorSpeed = speed_required * reaction_speed;
         pivot.motor = motor;
 
-        //Code for moving the thruster effector to always be at the initial pos
-        thruster_effector.transform.localPosition = thruster_effector_initial_pos;
-
         //Code for making the amount the rocket moves based off the up button
+        //Note that we have switched to using the up of the transform cos point effectors didnt work
         float vertical_input = Input.GetAxis("Vertical");
-        point_effector = thruster_effector.GetComponent<PointEffector2D>();
-        point_effector.forceMagnitude = Mathf.Clamp(vertical_input, 0, 1) * thrust_magnitude;
+        thruster_rb.AddRelativeForce(Mathf.Clamp(vertical_input, 0, 1) * thrust_magnitude * Vector2.up);
+
+        //Show the flames if there is vertical input
+        if (vertical_input > 0) {
+            FlameStream.SetActive(true);
+        } else {
+            FlameStream.SetActive(false);
+        }
+        
     }
 }
